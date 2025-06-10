@@ -10,11 +10,11 @@ GstElement *create_streaming(void)
 	GstElement *sink = gst_element_factory_make("tcpserversink", "tcp_sink");
 	if (!sink) {
 		gst_object_unref(bin);
-		g_printerr("Failed to create UDP sink\n");
+		g_printerr("Failed to create sink\n");
 		return NULL;
 	}
 
-	// Set UDP sink properties (example: host=127.0.0.1, port=5000)
+	// Set sink properties (example: host=0.0.0.0, port=5000)
 	g_object_set(sink, "host", "0.0.0.0", "port", 5000, NULL);
 
 	gst_bin_add(GST_BIN(bin), sink);
