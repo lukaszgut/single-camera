@@ -10,7 +10,6 @@ GstElement * create_camera_source(void)
 	GError *error = NULL;
 	GstElement *src = gst_element_factory_make("v4l2src", "camera_src");
 
-
 	if (!src) {
 		g_printerr("Failed to create camera source element: %s\n", error ? error->message : "unknown error");
 		if (error) g_clear_error(&error);

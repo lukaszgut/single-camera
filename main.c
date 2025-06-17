@@ -3,8 +3,9 @@
 
 #include "camera-source.h"
 #include "preprocessing.h"
-#include "dewarping.h"
 #include "streaming.h"
+
+#define GST_USE_UNSTABLE_API
 
 int main(int argc, char *argv[]) {
 	GstElement *pipeline;
@@ -13,32 +14,35 @@ int main(int argc, char *argv[]) {
 	// Initialize GStreamer
 	gst_init(&argc, &argv);
 
-	// Example pipeline: videotestsrc ! autovideosink
-
-
 	GstElement *camera_source = create_camera_source();
+	GstElement *preprocessing = create_preprocessing();
 	GstElement *streaming = create_streaming();
 
-	if (!camera_source || !streaming) {
+	if (!camera_source || !preprocessing || !streaming) {
 		g_printerr("Failed to create elements\n");
 		return -1;
 	}
 	pipeline = gst_pipeline_new("main-pipeline");
 	if (!pipeline) {
-		g_printerr("Failed to create pipeline: %s\n", error->message);
-		g_clear_error(&error);
+		g_printerr("Failed to create pipeline: %s\n", error ? error->message : "unknown error");
+		if (error) g_clear_error(&error);
 		return -1;
 	}
 
 	gst_bin_add_many(GST_BIN(pipeline),
 					 camera_source,
+					 preprocessing,
 					 streaming,
 					 NULL);
 
-	// Link the bins (empty bins, so linking will fail unless pads are added later)
-	gst_element_link_many(camera_source, streaming, NULL);
+	// Link the bins: camera_source -> preprocessing -> streaming
+	if (!gst_element_link_many(camera_source, preprocessing, streaming, NULL)) {
+		g_printerr("Failed to link elements in pipeline\n");
+		gst_object_unref(pipeline);
+		return -1;
+	}
 
-
+	calibrate(); // Call the calibrate function to add cameracalibrate to the insertbin
 
 	// Start playing
 	gst_element_set_state(pipeline, GST_STATE_PLAYING);
