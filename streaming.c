@@ -22,7 +22,6 @@ GstElement *create_streaming(void)
 	GstPad *pad = gst_element_get_static_pad(sink, "sink");
 	GstPad *ghost_pad = gst_ghost_pad_new("sink", pad);
 	gst_object_unref(pad);
-
 	gst_element_add_pad(bin, ghost_pad);
 
 	return bin;

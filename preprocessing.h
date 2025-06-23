@@ -1,4 +1,3 @@
-
 #ifndef PREPROCESSING_H
 #define PREPROCESSING_H
 
@@ -7,18 +6,20 @@
 /**
  * @brief Create a preprocessing bin
  *
- * This function creates a GStreamer bin containing the 'insertbin' element for preprocessing.
+ * This function creates a GStreamer bin containing the calibration or undistort effect for preprocessing.
  *
  * @return GstElement* The preprocessing bin element
  */
 GstElement *create_preprocessing(void);
 
+/**
+ * @brief Set preprocessing to calibration mode (use cameracalibrate effect)
+ */
+void calibrate(void);
 
 /**
- * @brief Adds a cameracalibrate element to the insertbin inside the preprocessing bin.
- *
- * @return TRUE if successful, FALSE otherwise.
+ * @brief Set preprocessing to undistort mode (use cameraundistort effect)
  */
-gboolean calibrate(void);
+void undistort(void);
 
 #endif // PREPROCESSING_H
