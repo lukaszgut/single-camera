@@ -1,0 +1,1 @@
+gst-launch-1.0 v4l2src ! videoconvert ! cameracalibrate board-height=6 board-width=6 show-corners=true ! videoconvert ! jpegenc ! avimux ! tcpserversink host=0.0.0.0 port=5000
