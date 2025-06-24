@@ -9,26 +9,36 @@
 
 GstElement *pipeline = NULL;
 
-void handle_calibration_data(void) {
-    GstBus *bus = gst_element_get_bus(pipeline);
-    if (!bus) {
-        g_print("Failed to get bus from effect element\n");
+void handle_calibration_data(const gchar *settings) {
+    if (!settings) return;
+    FILE *f = fopen("calibration_data.xml", "w");
+    if (!f) {
+        g_printerr("Failed to open calibration_data.xml for writing\n");
         return;
     }
-    GstMessage *msg = gst_bus_timed_pop_filtered(bus, GST_CLOCK_TIME_NONE,
-        GST_MESSAGE_ELEMENT);
-    g_print("Received message: %s\n", GST_MESSAGE_TYPE_NAME(msg));
-    if (GST_MESSAGE_TYPE(msg) == GST_MESSAGE_ELEMENT) {
+    fprintf(f, "%s\n", settings);
+    fclose(f);
+    g_print("Calibration data saved to calibration_data.xml\n");
+}
+
+void handle_calibration_message(void) {
+    GstBus *bus = gst_element_get_bus(pipeline);
+    if (!bus) {
+        g_print("Failed to get bus from pipeline\n");
+        return;
+    }
+    GstMessage *msg = gst_bus_timed_pop_filtered(bus, GST_CLOCK_TIME_NONE, GST_MESSAGE_ELEMENT);
+    g_print("Received message: %s\n", msg ? GST_MESSAGE_TYPE_NAME(msg) : "(null)");
+    if (msg && GST_MESSAGE_TYPE(msg) == GST_MESSAGE_ELEMENT) {
         const GstStructure *s = gst_message_get_structure(msg);
         if (s && gst_structure_has_name(s, "CameraCalibration")) {
             const gchar *settings = gst_structure_get_string(s, "serialized-undistort-settings");
             if (settings) {
                 g_print("Received calibration settings: %s\n", settings);
-                // TODO: Save or process calibration settings as needed
+                handle_calibration_data(settings);
             }
         }
     }
-
     if (msg) {
         gst_message_unref(msg);
     }
@@ -85,7 +95,7 @@ void close_pipeline() {
 
 int main(int argc, char *argv[]) {
     run_pipeline(argc, argv);
-    handle_calibration_data();
+    handle_calibration_message();
     close_pipeline();
     return 0;
 }
