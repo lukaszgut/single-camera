@@ -9,6 +9,32 @@
 
 GstElement *pipeline = NULL;
 
+void handle_calibration_data(void) {
+    GstBus *bus = gst_element_get_bus(pipeline);
+    if (!bus) {
+        g_print("Failed to get bus from effect element\n");
+        return;
+    }
+    GstMessage *msg = gst_bus_timed_pop_filtered(bus, GST_CLOCK_TIME_NONE,
+        GST_MESSAGE_ELEMENT);
+    g_print("Received message: %s\n", GST_MESSAGE_TYPE_NAME(msg));
+    if (GST_MESSAGE_TYPE(msg) == GST_MESSAGE_ELEMENT) {
+        const GstStructure *s = gst_message_get_structure(msg);
+        if (s && gst_structure_has_name(s, "CameraCalibration")) {
+            const gchar *settings = gst_structure_get_string(s, "serialized-undistort-settings");
+            if (settings) {
+                g_print("Received calibration settings: %s\n", settings);
+                // TODO: Save or process calibration settings as needed
+            }
+        }
+    }
+
+    if (msg) {
+        gst_message_unref(msg);
+    }
+    gst_object_unref(bus);
+}
+
 void run_pipeline(int argc, char *argv[]) {
     GError *error = NULL;
 
@@ -47,36 +73,19 @@ void run_pipeline(int argc, char *argv[]) {
     g_print("Starting pipeline...\n");
     gst_element_set_state(pipeline, GST_STATE_PLAYING);
 
-    // Wait until error or EOS
-    GstBus *bus = gst_element_get_bus(pipeline);
-    GstMessage *msg = gst_bus_timed_pop_filtered(bus, GST_CLOCK_TIME_NONE,
-        GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
-
-    // Free resources
-    if (msg)
-        gst_message_unref(msg);
-    gst_object_unref(bus);
-    gst_element_set_state(pipeline, GST_STATE_NULL);
-    gst_object_unref(pipeline);
 }
 
-void *run_control_loop(void *arg) {
-	sleep(10);
-	g_print("Calling calibrate\n");
-    while (1) {
-        sleep(1);
+void close_pipeline() {
+    if (pipeline) {
+	gst_element_set_state(pipeline, GST_STATE_NULL);
+	gst_object_unref(pipeline);
+	pipeline = NULL;
     }
-    return NULL;
 }
 
 int main(int argc, char *argv[]) {
-    pthread_t control_thread;
-    // Spawn the control loop thread
-    if (pthread_create(&control_thread, NULL, run_control_loop, NULL) != 0) {
-        g_printerr("Failed to create control loop thread\n");
-        return -1;
-    }
     run_pipeline(argc, argv);
-    pthread_join(control_thread, NULL);
+    handle_calibration_data();
+    close_pipeline();
     return 0;
 }

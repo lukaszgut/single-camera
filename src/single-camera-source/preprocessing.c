@@ -4,6 +4,9 @@
 
 // Static variable to control calibration mode
 static gboolean calibration_mode = TRUE;
+// Static pointer to the effect element
+static GstElement *effect = NULL;
+
 
 void calibrate(void)
 {
@@ -24,12 +27,16 @@ GstElement *create_preprocessing(void)
     }
 
     GstElement *vc_before = gst_element_factory_make("videoconvert", "vc_before");
-    GstElement *effect = NULL;
+    effect = NULL;
     GstElement *vc_after = gst_element_factory_make("videoconvert", "vc_after");
 
     if (calibration_mode) {
         g_print("Creating cameracalibrate effect\n");
         effect = gst_element_factory_make("cameracalibrate", "cameracalibrate");
+        if (effect) {
+            // Set board property to 6x6
+            g_object_set(effect, "board-width", 6, "board-height", 6, NULL);
+        }
     } else {
         g_print("Creating cameraundistort effect\n");
         effect = gst_element_factory_make("cameraundistort", "cameraundistort");
