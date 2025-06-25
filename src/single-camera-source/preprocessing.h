@@ -22,5 +22,13 @@ void calibrate(void);
  */
 void undistort(void);
 
+/**
+ * @brief Handle calibration message
+ *
+ * This function handles the calibration message from the pipeline.
+ *
+ * @param pipeline The pipeline element
+ */
+void handle_calibration_message(GstElement *pipeline);
 
 #endif // PREPROCESSING_H
