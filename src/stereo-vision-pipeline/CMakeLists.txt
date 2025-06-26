@@ -26,16 +26,13 @@ include_directories(
 
 set(SOURCES
     main.c
-    camera-source.c
-    preprocessing.c
-    streaming.c
 )
 
-add_executable(single_camera ${SOURCES})
+add_executable(stereo-vision-pipeline ${SOURCES})
 
-target_compile_definitions(single_camera PRIVATE
+target_compile_definitions(stereo-vision-pipeline PRIVATE
     GST_USE_UNSTABLE_API
 )
 
-target_link_libraries(single_camera ${GST_LIBRARIES} ${GLIB_LIBRARIES} ${GOB_LIBRARIES})
+target_link_libraries(stereo-vision-pipeline ${GST_LIBRARIES} ${GLIB_LIBRARIES} ${GOB_LIBRARIES})
 
