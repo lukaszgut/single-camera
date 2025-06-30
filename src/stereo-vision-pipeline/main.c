@@ -6,19 +6,22 @@ GstElement* create_tcp_to_window_pipeline(void) {
 
     GstElement *tcpclientsrc = gst_element_factory_make("tcpclientsrc", "tcpclientsrc");
     GstElement *jpegdec = gst_element_factory_make("jpegdec", "jpegdec");
-    GstElement *videoconvert = gst_element_factory_make("videoconvert", "videoconvert");
+    GstElement *videoconvert1 = gst_element_factory_make("videoconvert", "videoconvert1");
+    GstElement *segmentation = gst_element_factory_make("segmentation", "segmentation");
+    GstElement *videoconvert2 = gst_element_factory_make("videoconvert", "videoconvert2");
     GstElement *autovideosink = gst_element_factory_make("autovideosink", "autovideosink");
 
-    if (!tcpclientsrc || !jpegdec || !videoconvert || !autovideosink) {
+    if (!tcpclientsrc || !jpegdec || !videoconvert1 || !segmentation || !videoconvert2 || !autovideosink) {
         gst_object_unref(pipeline);
         return NULL;
     }
 
     g_object_set(tcpclientsrc, "host", "127.0.0.1", "port", 5000, NULL);
+    g_object_set(segmentation, "test-mode", TRUE, "method", 2, NULL);
 
-    gst_bin_add_many(GST_BIN(pipeline), tcpclientsrc, jpegdec, videoconvert, autovideosink, NULL);
+    gst_bin_add_many(GST_BIN(pipeline), tcpclientsrc, jpegdec, videoconvert1, segmentation, videoconvert2, autovideosink, NULL);
 
-    if (!gst_element_link_many(tcpclientsrc, jpegdec, videoconvert, autovideosink, NULL)) {
+    if (!gst_element_link_many(tcpclientsrc, jpegdec, videoconvert1, segmentation, videoconvert2, autovideosink, NULL)) {
         gst_object_unref(pipeline);
         return NULL;
     }
