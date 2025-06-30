@@ -1,2 +1,2 @@
-# single-camera
-Single camera gstreamer pipeline that runs of Raspberry PI 3 with RaspCam2
+# vision-pipeline
+Use possibly multiple cameras to detect and analyze plants.
